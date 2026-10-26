@@ -1,0 +1,42 @@
+name: Publish verified Sarang MP4
+on:
+  push:
+    paths:
+      - 'requests/*.json'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and verify original
+        run: |
+          python - <<'PY'
+          import json,zipfile,io,hashlib,urllib.request,pathlib
+          p=pathlib.Path("requests/sarang-dance-20261026.json")
+          data=json.loads(p.read_text())
+          u=data["archive_url"]
+          if not u.startswith("https://du9d8548ooqnc.cloudfront.net/board/"):
+              raise ValueError("Unapproved source")
+          with urllib.request.urlopen(u,timeout=120) as response:
+              archive=response.read()
+          with zipfile.ZipFile(io.BytesIO(archive)) as z:
+              names=[n for n in z.namelist() if n.lower().endswith(".mp4")]
+              if len(names)!=1: raise ValueError("Expected one MP4")
+              video=z.read(names[0])
+          if hashlib.sha256(video).hexdigest()!=data["sha256"]:
+              raise ValueError("Original video checksum mismatch")
+          if len(video)>90_000_000: raise ValueError("Too large")
+          pathlib.Path("videos").mkdir(exist_ok=True)
+          pathlib.Path("videos/sarang-dance-20261026.mp4").write_bytes(video)
+          print("Verified video bytes:",len(video))
+          PY
+      - name: Commit original video to public repository
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@users.noreply.github.com
+          git add videos/sarang-dance-20261026.mp4
+          git diff --cached --quiet || (git commit -m "Publish verified Sarang dance video" && git push)

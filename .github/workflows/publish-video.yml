@@ -16,7 +16,7 @@ jobs:
         run: |
           python - <<'PY'
           import json,zipfile,io,hashlib,urllib.request,pathlib
-          p=pathlib.Path("requests/sarang-dance-20261026.json")
+          p=pathlib.Path("requests/sarang-walk-20261028.json")
           data=json.loads(p.read_text())
           u=data["archive_url"]
           if not u.startswith("https://du9d8548ooqnc.cloudfront.net/board/"):
@@ -31,12 +31,12 @@ jobs:
               raise ValueError("Original video checksum mismatch")
           if len(video)>90_000_000: raise ValueError("Too large")
           pathlib.Path("videos").mkdir(exist_ok=True)
-          pathlib.Path("videos/sarang-dance-20261026.mp4").write_bytes(video)
+          pathlib.Path("videos/sarang-walk-20261028.mp4").write_bytes(video)
           print("Verified video bytes:",len(video))
           PY
       - name: Commit original video to public repository
         run: |
           git config user.name github-actions
           git config user.email github-actions@users.noreply.github.com
-          git add videos/sarang-dance-20261026.mp4
-          git diff --cached --quiet || (git commit -m "Publish verified Sarang dance video" && git push)
+          git add videos/sarang-walk-20261028.mp4
+          git diff --cached --quiet || (git commit -m "Publish verified Sarang walk video" && git push)

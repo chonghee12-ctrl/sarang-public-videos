@@ -24,7 +24,7 @@ jobs:
         run: |
           yt-dlp --no-playlist --retries 3 --extractor-retries 3 \
             -f 'bv*+ba/b' --merge-output-format mkv \
-            -o /tmp/sarang_bartender_source.%(ext)s \
+            -o '/tmp/sarang_bartender_source.%(ext)s' \
             'https://www.youtube.com/watch?v=7PhL9ZiPKGc'
           python - <<'PY'
           from glob import glob
